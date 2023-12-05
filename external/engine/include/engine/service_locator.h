@@ -16,6 +16,17 @@ class ServiceLocator
             }
             _window = std::unique_ptr<Window>(window);
         }
+
+        static inline void ShutdownServices() {
+            // Ensure we shut down in the correct order
+            // Usually opposite order of initialized
+            shutdownWindow();
+        }
     private:
         static inline std::unique_ptr<Window> _window = nullptr;
+
+        static inline void shutdownWindow() {
+            _window.reset();
+            _window = nullptr;
+        }
 };

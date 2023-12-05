@@ -1,12 +1,20 @@
-#include <iostream>
-#include <engine/engine.h>
-#include <glm/glm.hpp>
-#include <engine/service_locator.h>
+#include <engine/platform/entry_point.h>
+#include <engine/platform/game.h>
 
-int main(int argc, char** argv) {
-    std::cout << "Hello, world!" << std::endl;
-    Engine::Init();
-    ServiceLocator::GetWindow()->OpenWindow();
-    while(!ServiceLocator::GetWindow()->Update()) {
-    }
+class CppGame: public Game
+{
+    public:
+        explicit CppGame(std::string title): Game(std::move(title)) {
+            std::cout << "Hello, Cpp Game" << std::endl;
+        }
+
+    protected:
+        void Update(float deltaTime) override {
+            // std::cout << "Update" << std::endl;
+        }
+};
+
+// Runtime
+Game* CreateGame() {
+    return new CppGame("Cpp Game");
 }
