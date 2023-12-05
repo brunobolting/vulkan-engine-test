@@ -3,7 +3,13 @@ project(cpp_engine VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(${PROJECT_NAME} src/engine.cpp)
+# add external libraries
+add_subdirectory(external/glm)
+add_subdirectory(external/glfw)
+
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+add_library(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
@@ -14,6 +20,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-
+        glm
     PRIVATE
+        glfw
 )

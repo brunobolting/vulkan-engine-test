@@ -1,7 +1,13 @@
 #include <engine/engine.h>
 #include <iostream>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <engine/service_locator.h>
 
-void Engine::PrintHelloWorld()
-{
-    std::cout << "Hello, I'm talking to you from the engine library" << std::endl;
+#include "platform/glfw_window.h"
+
+void Engine::Init() {
+    std::cout << "Initializing window!" << std::endl;
+
+    ServiceLocator::Provide(new CustomWindow());
 }
