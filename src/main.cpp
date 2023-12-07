@@ -1,7 +1,7 @@
 #include <engine/platform/entry_point.h>
 #include <engine/platform/game.h>
 
-class CppGame: public Game
+class CppGame: public ZERO::Game
 {
     public:
         explicit CppGame(std::string title): Game(std::move(title)) {
@@ -15,6 +15,6 @@ class CppGame: public Game
 };
 
 // Runtime
-Game* CreateGame() {
+ZERO::Game* ZERO::CreateGame() {
     return new CppGame("Cpp Game");
 }

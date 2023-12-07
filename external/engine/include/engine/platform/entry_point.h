@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv) {
     // Create the game
-    auto* theGame = CreateGame();
+    auto* theGame = ZERO::CreateGame();
 
     // Run the game
     theGame->Run();

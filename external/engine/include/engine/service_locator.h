@@ -1,32 +1,57 @@
 #pragma once
 
 #include <memory>
+#include <any>
 #include <engine/platform/window.h>
+#include <engine/rendering/renderer.h>
 
-class ServiceLocator
+namespace ZERO
 {
-    public:
-        static inline const std::unique_ptr<Window>& GetWindow() {
-            return _window;
-        };
+    class ServiceLocator
+    {
+        public:
+            static inline const std::unique_ptr<Window> &GetWindow() {
+                return _window;
+            };
 
-        static inline void Provide(Window* window) {
-            if (_window != nullptr) {
-                return;
+            static inline const std::unique_ptr<Renderer> &GetRenderer() {
+                return _renderer;
+            };
+
+            static inline void Provide(Window* window) {
+                if (_window != nullptr) {
+                    return;
+                }
+                _window = std::unique_ptr<Window>(window);
             }
-            _window = std::unique_ptr<Window>(window);
-        }
 
-        static inline void ShutdownServices() {
-            // Ensure we shut down in the correct order
-            // Usually opposite order of initialized
-            shutdownWindow();
-        }
-    private:
-        static inline std::unique_ptr<Window> _window = nullptr;
+            static inline void Provide(Renderer* renderer, RendererSettings settings) {
+                if (_renderer != nullptr) {
+                    return;
+                }
+                _renderer = std::unique_ptr<Renderer>(renderer);
+                _renderer->Init(settings);
+            }
 
-        static inline void shutdownWindow() {
-            _window.reset();
-            _window = nullptr;
-        }
-};
+            static inline void ShutdownServices() {
+                // Ensure we shut down in the correct order
+                // Usually opposite order of initialized
+                shutdownRenderer();
+                shutdownWindow();
+            }
+        private:
+            static inline std::unique_ptr<Window> _window = nullptr;
+            static inline std::unique_ptr<Renderer> _renderer = nullptr;
+            static inline void shutdownWindow() {
+                _window.reset();
+                _window = nullptr;
+            }
+            static inline void shutdownRenderer() {
+                if (!_renderer) {
+                    return;
+                }
+                _renderer->Shutdown();
+                _renderer = nullptr;
+            }
+    };
+}

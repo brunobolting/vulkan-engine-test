@@ -1,5 +1,8 @@
 # Game Engine
 
+## DOCS
+- https://vkguide.dev/
+
 ## Libraries
 
 ### Private
