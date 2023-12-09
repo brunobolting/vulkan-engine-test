@@ -17,5 +17,27 @@ namespace ZERO
                 uint32_t count = 1,
                 VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY
             );
+
+            // RENDER PASS INITIALIZERS
+            static VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(
+                VkShaderStageFlagBits stage,
+                VkShaderModule shaderModule
+            );
+
+            static VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo();
+
+            static VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo(
+                VkPrimitiveTopology topology
+            );
+
+            static VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo(
+                VkPolygonMode polygonMode
+            );
+
+            static VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo();
+
+            static VkPipelineColorBlendAttachmentState PipelineColorBlendAttachmentState();
+
+            static VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo();
     };
 }

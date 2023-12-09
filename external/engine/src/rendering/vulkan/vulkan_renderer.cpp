@@ -1,10 +1,11 @@
 #include <VkBootstrap.h>
 #include <engine/service_locator.h>
+#include <cmath>
 #include "vulkan_renderer.h"
 #include "vulkan_initializers.h"
 #include "vulkan_types.h"
 #include "vulkan_utilities.h"
-#include <cmath>
+#include "vulkan_pipeline_builder.h"
 
 namespace ZERO
 {
@@ -18,10 +19,13 @@ namespace ZERO
         createDefaultRenderPass();
         createFramebuffers();
         createSyncStructures();
+        createPipelines();
     }
 
     void VulkanRenderer::Shutdown() {
         vkDeviceWaitIdle(_device);
+        vkDestroyPipeline(_device, _trianglePipeline, nullptr);
+        vkDestroyPipelineLayout(_device, _trianglePipelineLayout, nullptr);
         vkDestroyFence(_device, _renderFence, nullptr);
         vkDestroySemaphore(_device, _presentSemaphore, nullptr);
         vkDestroySemaphore(_device, _renderSemaphore, nullptr);
@@ -82,6 +86,8 @@ namespace ZERO
         vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         // DRAW CALLS
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _trianglePipeline);
+        vkCmdDraw(cmd, 3, 1, 0, 0);
 
         vkCmdEndRenderPass(cmd);
         VK_CHECK(vkEndCommandBuffer(cmd));
@@ -227,5 +233,67 @@ namespace ZERO
         VkSemaphoreCreateInfo semaphoreCreateInfo { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
         VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore));
         VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore));
+    }
+
+    void VulkanRenderer::createPipelines() {
+        VkShaderModule triandleFragShader;
+        if (!VulkanUtilities::LoadShaderModule("shaders/triangle.frag.spv", _device, triandleFragShader)) {
+            printf("failed to load triangle fragment shader module\n");
+        } else {
+            printf("successfully loaded triangle fragment shader module\n");
+        }
+
+        VkShaderModule triandleVertShader;
+        if (!VulkanUtilities::LoadShaderModule("shaders/triangle.vert.spv", _device, triandleVertShader)) {
+            printf("failed to load triangle vertex shader module\n");
+        } else {
+            printf("successfully loaded triangle vertex shader module\n");
+        }
+
+        auto pipelineLayoutCreateInfo = VulkanInitializers::PipelineLayoutCreateInfo();
+        VK_CHECK(vkCreatePipelineLayout(_device, &pipelineLayoutCreateInfo, nullptr, &_trianglePipelineLayout));
+
+        /*
+         * TEMPORARY PIPELINE BUILDER
+        */
+        VulkanPipelineBuilder pipelineBuilder;
+        pipelineBuilder._shaderStages.push_back(VulkanInitializers::PipelineShaderStageCreateInfo(
+            VK_SHADER_STAGE_VERTEX_BIT,
+            triandleVertShader
+        ));
+        pipelineBuilder._shaderStages.push_back(VulkanInitializers::PipelineShaderStageCreateInfo(
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            triandleFragShader
+        ));
+        pipelineBuilder._vertexInputInfo = VulkanInitializers::PipelineVertexInputStateCreateInfo();
+        pipelineBuilder._inputAssembly = VulkanInitializers::PipelineInputAssemblyStateCreateInfo(
+            VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+        );
+        pipelineBuilder._viewport = {
+            .x = 0.0f,
+            .y = 0.0f,
+            .width = (float) _windowExtent.width,
+            .height = (float) _windowExtent.height,
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f,
+        };
+        pipelineBuilder._scissor = {
+            .offset = {
+                .x = 0,
+                .y = 0
+            },
+            .extent = _windowExtent
+        };
+        pipelineBuilder._rasterizer = VulkanInitializers::PipelineRasterizationStateCreateInfo(
+            VK_POLYGON_MODE_FILL
+        );
+        pipelineBuilder._multisampling = VulkanInitializers::PipelineMultisampleStateCreateInfo();
+        pipelineBuilder._colorBlendAttachment = VulkanInitializers::PipelineColorBlendAttachmentState();
+        pipelineBuilder._pipelineLayout = _trianglePipelineLayout;
+
+        _trianglePipeline = pipelineBuilder.BuildPipeline(_device, _renderPass);
+
+        vkDestroyShaderModule(_device, triandleFragShader, nullptr);
+        vkDestroyShaderModule(_device, triandleVertShader, nullptr);
     }
 }

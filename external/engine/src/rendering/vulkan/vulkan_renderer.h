@@ -23,6 +23,7 @@ namespace ZERO
             void createDefaultRenderPass();
             void createFramebuffers();
             void createSyncStructures();
+            void createPipelines();
 
         /*
          * MEMBERS
@@ -65,5 +66,10 @@ namespace ZERO
             VkSemaphore _presentSemaphore;
             VkSemaphore _renderSemaphore;
             VkFence _renderFence;
+            /*
+             * PIPELINES
+            */
+            VkPipelineLayout _trianglePipelineLayout;
+            VkPipeline _trianglePipeline;
     };
 }
