@@ -24,6 +24,7 @@ namespace ZERO
     class Window
     {
         public:
+            virtual ~Window() = default;
             virtual void OpenWindow(WindowData data) = 0;
             virtual bool Update() = 0;
             virtual std::pair<int, int> GetWindowExtents() = 0;

@@ -1,8 +1,8 @@
+#include <engine/core/game.h>
 #include <engine/service_locator.h>
-#include "engine/platform/game.h"
-#include "multiplatform_window.h"
-#include "rendering/vulkan/vulkan_renderer.h"
-#include "sdl_window.h"
+#include <platform/multiplatform_window.h>
+#include <rendering/vulkan/vulkan_renderer.h>
+#include <platform/sdl_window.h>
 
 namespace ZERO
 {

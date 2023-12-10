@@ -3,8 +3,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <engine/service_locator.h>
-
-#include <engine/platform/game.h>
+#include <engine/core/game.h>
 
 int main(int argc, char** argv) {
     // Create the game

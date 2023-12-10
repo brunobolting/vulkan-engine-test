@@ -1,5 +1,5 @@
 #include <engine/platform/entry_point.h>
-#include <engine/platform/game.h>
+#include <engine/core/game.h>
 #include <engine/service_locator.h>
 
 class CppGame: public ZERO::Game
