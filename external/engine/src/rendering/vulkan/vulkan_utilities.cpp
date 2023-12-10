@@ -1,11 +1,12 @@
 #include "vulkan_utilities.h"
 #include <fstream>
 #include <vector>
+#include <engine/platform/filesystem.h>
 
 namespace ZERO
 {
-    bool VulkanUtilities::LoadShaderModule(const std::string &filePath, VkDevice device, VkShaderModule &outShaderModule) {
-        std::ifstream file(filePath, std::ios::ate | std::ios::binary);
+    bool VulkanUtilities::LoadShaderModule(const std::string &shaderName, VkDevice device, VkShaderModule &outShaderModule) {
+        std::ifstream file(Filesystem::GetShaderPath() / shaderName, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
             return false;
         }
