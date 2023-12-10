@@ -3,6 +3,7 @@
 
 #include <engine/platform/window.h>
 #include <GLFW/glfw3.h>
+#include <input/multiplatform_input.h>
 
 namespace ZERO
 {
@@ -15,6 +16,8 @@ namespace ZERO
             std::pair<int, int> GetWindowExtents() override;
             void RequestDrawSurface(std::unordered_map<SurfaceArgs, std::any> args) override;
         private:
-            GLFWwindow* _window;
+            std::unordered_map<InputKey, InputDeviceState> getGamepadState(int joystickId);
+            MultiplatformInput _input {};
+            GLFWwindow *_window;
     };
 }

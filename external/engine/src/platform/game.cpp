@@ -24,6 +24,10 @@ namespace ZERO
                 continue;
             }
 
+            if (ServiceLocator::GetInputManager()) {
+                ServiceLocator::GetInputManager()->processInput();
+            }
+
             // Calculate delta time
 
             // Update game states
@@ -37,6 +41,8 @@ namespace ZERO
     }
 
     void Game::initializeServices() {
+        // provide input manager
+        ServiceLocator::Provide(new InputManager());
         // provide a window
         ServiceLocator::Provide(new MultiplatformWindow());
         // Open the window
