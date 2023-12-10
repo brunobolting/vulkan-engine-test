@@ -111,22 +111,18 @@ namespace ZERO
         return {width, height};
     }
 
-    void MultiplatformWindow::RequestDrawSurface(std::unordered_map<SurfaceArgs, std::any> args) {
-        try {
-            auto vkInstance = std::any_cast<VkInstance>(args[SurfaceArgs::INSTANCE]);
-            auto outSurface = std::any_cast<VkSurfaceKHR *>(args[SurfaceArgs::OUT_SURFACE]);
-            VkAllocationCallbacks* allocationCallbacks = nullptr;
-            if (args[SurfaceArgs::ALLOCATORS].has_value()) {
-                allocationCallbacks = std::any_cast<VkAllocationCallbacks *>(args[SurfaceArgs::ALLOCATORS]);
-            }
-            if (vkInstance == VK_NULL_HANDLE) {
-                throw std::runtime_error("vulkan instance not provided");
-            }
-            if (glfwCreateWindowSurface(vkInstance, _window, allocationCallbacks, outSurface) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create window surface");
-            }
-        } catch (const std::bad_any_cast &e) {
-            std::cout << "Failed to cast window surface arguments: " << e.what() << std::endl;
+    void MultiplatformWindow::RequestDrawSurface(std::unordered_map<SurfaceArgs, int*> args) {
+        auto vkInstance = reinterpret_cast<VkInstance>(args[SurfaceArgs::INSTANCE]);
+        auto outSurface = reinterpret_cast<VkSurfaceKHR *>(args[SurfaceArgs::OUT_SURFACE]);
+        VkAllocationCallbacks* allocationCallbacks = nullptr;
+        if (args[SurfaceArgs::ALLOCATORS]) {
+            allocationCallbacks = reinterpret_cast<VkAllocationCallbacks *>(args[SurfaceArgs::ALLOCATORS]);
+        }
+        if (vkInstance == VK_NULL_HANDLE) {
+            throw std::runtime_error("vulkan instance not provided");
+        }
+        if (glfwCreateWindowSurface(vkInstance, _window, allocationCallbacks, outSurface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface");
         }
     }
 

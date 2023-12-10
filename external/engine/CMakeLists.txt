@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 # add external libraries
 add_subdirectory(external/glm)
 add_subdirectory(external/glfw)
+add_subdirectory(external/SDL)
 add_subdirectory(external/vk-bootstrap)
 
 # library find functions
@@ -29,6 +30,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${Vulkan_LIBRARIES}
         glfw
+        SDL3::SDL3
         vk-bootstrap
 )
 

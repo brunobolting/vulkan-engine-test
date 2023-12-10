@@ -1,7 +1,8 @@
-#include "engine/platform/game.h"
 #include <engine/service_locator.h>
+#include "engine/platform/game.h"
 #include "multiplatform_window.h"
 #include "rendering/vulkan/vulkan_renderer.h"
+#include "sdl_window.h"
 
 namespace ZERO
 {
@@ -44,7 +45,8 @@ namespace ZERO
         // provide input manager
         ServiceLocator::Provide(new InputManager());
         // provide a window
-        ServiceLocator::Provide(new MultiplatformWindow());
+        // ServiceLocator::Provide(new MultiplatformWindow());
+        ServiceLocator::Provide(new SDLWindow());
         // Open the window
         ServiceLocator::GetWindow()->OpenWindow({
             .title = _title,

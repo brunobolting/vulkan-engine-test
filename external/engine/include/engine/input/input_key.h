@@ -53,7 +53,7 @@ namespace ZERO
     };
 
     struct InputAction {
-        std::string actionName;
+        std::string actionName { "" };
         float scale { 1.0f };
     };
 }
