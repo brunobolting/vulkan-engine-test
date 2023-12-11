@@ -2,6 +2,7 @@
 #include "vulkan_utilities.h"
 #include "vulkan_initializers.h"
 #include "vulkan_pipeline_builder.h"
+#include "vulkan_types.h"
 
 namespace ZERO
 {
@@ -39,7 +40,12 @@ namespace ZERO
             VK_SHADER_STAGE_FRAGMENT_BIT,
             fragShader
         ));
+        auto vertexBindings = GetVertexInputDescription();
         pipelineBuilder._vertexInputInfo = VulkanInitializers::PipelineVertexInputStateCreateInfo();
+        pipelineBuilder._vertexInputInfo.vertexBindingDescriptionCount = vertexBindings.Bindings.size();
+        pipelineBuilder._vertexInputInfo.pVertexBindingDescriptions = vertexBindings.Bindings.data();
+        pipelineBuilder._vertexInputInfo.vertexAttributeDescriptionCount = vertexBindings.Attributes.size();
+        pipelineBuilder._vertexInputInfo.pVertexAttributeDescriptions = vertexBindings.Attributes.data();
         pipelineBuilder._inputAssembly = VulkanInitializers::PipelineInputAssemblyStateCreateInfo(
             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
         );

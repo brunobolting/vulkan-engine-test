@@ -8,6 +8,12 @@ add_subdirectory(external/glm)
 add_subdirectory(external/glfw)
 add_subdirectory(external/SDL)
 add_subdirectory(external/vk-bootstrap)
+add_subdirectory(external/vma)
+
+set_target_properties(VulkanMemoryAllocator PROPERTIES
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+    $<TARGET_PROPERTY:VulkanMemoryAllocator,INTERFACE_INCLUDE_DIRECTORIES>
+)
 
 # library find functions
 find_package(Vulkan REQUIRED)
@@ -32,6 +38,7 @@ target_link_libraries(${PROJECT_NAME}
         glfw
         SDL3::SDL3
         vk-bootstrap
+        VulkanMemoryAllocator
 )
 
 # shader compilation

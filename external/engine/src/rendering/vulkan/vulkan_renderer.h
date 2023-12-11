@@ -3,12 +3,17 @@
 #include <engine/rendering/renderer.h>
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <memory>
+#include "vulkan_memory_allocator.h"
 
 namespace ZERO
 {
     class VulkanRenderer: public Renderer
     {
         friend class VulkanShader;
+        friend class VulkanVertexBuffer;
+        friend class VulkanIndexBuffer;
+
         /*
          * FUNCTIONS
         */
@@ -17,6 +22,8 @@ namespace ZERO
             void Shutdown() override;
             void RenderFrame() override;
             std::shared_ptr<Shader> CreateShader() override;
+            std::shared_ptr<VertexBuffer> CreateVertexBuffer() override;
+            std::shared_ptr<IndexBuffer> CreateIndexBuffer() override;
 
         private:
             void initCore();
@@ -25,8 +32,9 @@ namespace ZERO
             void createDefaultRenderPass();
             void createFramebuffers();
             void createSyncStructures();
-            void createPipelines();
 
+            // FUNCTIONS TO BE MOVED OUT OF RENDERER
+            void setupScene();
         /*
          * MEMBERS
         */
@@ -42,6 +50,7 @@ namespace ZERO
             VkPhysicalDevice _physicalDevice; //physical device
             VkDevice _device; // logical device
             VkSurfaceKHR _surface;
+            VmaAllocator _allocator;
             /*
              * SWAPCHAIN
             */
@@ -73,5 +82,11 @@ namespace ZERO
             */
             std::shared_ptr<Shader> _triangleShader { nullptr };
             std::shared_ptr<Shader> _triangleShader2 { nullptr };
+
+            std::shared_ptr<VertexBuffer> _triangle1VertexBuffer { nullptr };
+            std::shared_ptr<IndexBuffer> _triangle1IndexBuffer { nullptr };
+
+            std::shared_ptr<VertexBuffer> _triangle2VertexBuffer { nullptr };
+            std::shared_ptr<IndexBuffer> _triangle2IndexBuffer { nullptr };
     };
 }
