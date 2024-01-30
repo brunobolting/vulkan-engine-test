@@ -20,6 +20,7 @@ namespace ZERO
         createCommands();
         createDefaultRenderPass();
         createFramebuffers();
+        recreateSwapchain();
         createSyncStructures();
         setupScene();
     }
@@ -54,15 +55,8 @@ namespace ZERO
         vkDestroyFence(_device, _renderFence, nullptr);
         vkDestroySemaphore(_device, _presentSemaphore, nullptr);
         vkDestroySemaphore(_device, _renderSemaphore, nullptr);
-        for (auto framebuffer : _framebuffers) {
-            vkDestroyFramebuffer(_device, framebuffer, nullptr);
-        }
-        vkDestroyRenderPass(_device, _renderPass, nullptr);
+        cleanupSwapchain();
         vkDestroyCommandPool(_device, _commandPool, nullptr);
-        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
-        for (auto imageView : _swapchainImageViews) {
-            vkDestroyImageView(_device, imageView, nullptr);
-        }
         vmaDestroyAllocator(_allocator);
         vkDestroyDevice(_device, nullptr);
         vkDestroySurfaceKHR(_instance, _surface, nullptr);
@@ -75,16 +69,23 @@ namespace ZERO
         VK_CHECK(vkResetFences(_device, 1, &_renderFence));
 
         uint32_t swapchainImageIndex;
-        VK_CHECK(vkAcquireNextImageKHR(
+        auto acquireImageResult = vkAcquireNextImageKHR(
             _device,
             _swapchain,
             ONE_SECOND,
             _presentSemaphore,
-            nullptr,
+            VK_NULL_HANDLE,
             &swapchainImageIndex
-        ));
-        VK_CHECK(vkResetCommandBuffer(_mainCommandBuffer, 0));
+        );
+        if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreateSwapchain();
+            return;
+        }
+        if (acquireImageResult != VK_SUBOPTIMAL_KHR) {
+            VK_CHECK(acquireImageResult);
+        }
 
+        VK_CHECK(vkResetCommandBuffer(_mainCommandBuffer, 0));
         VkCommandBuffer cmd = _mainCommandBuffer;
         VkCommandBufferBeginInfo beginInfo { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -148,12 +149,24 @@ namespace ZERO
         presentInfoKhr.waitSemaphoreCount = 1;
         presentInfoKhr.pWaitSemaphores = &_renderSemaphore;
         presentInfoKhr.pImageIndices = &swapchainImageIndex;
-        VK_CHECK(vkQueuePresentKHR(_graphicsQueue, &presentInfoKhr));
+        auto presentResult = vkQueuePresentKHR(_graphicsQueue, &presentInfoKhr);
+        if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || _framebufferResized) {
+            _framebufferResized = false;
+            recreateSwapchain();
+            return;
+        }
+
+        VK_CHECK(presentResult);
+        erase_if(_shaders, [](const auto shader) {
+            return shader.expired();
+        });
         _frameNumber++;
     }
 
     std::shared_ptr<Shader> VulkanRenderer::CreateShader() {
-        return std::make_shared<VulkanShader>(this);
+        auto shader = std::make_shared<VulkanShader>(this);
+        _shaders.push_back(shader);
+        return shader;
     }
 
     std::shared_ptr<VertexBuffer> VulkanRenderer::CreateVertexBuffer() {
@@ -229,6 +242,10 @@ namespace ZERO
         allocatorInfo.physicalDevice = _physicalDevice;
         allocatorInfo.instance = _instance;
         vmaCreateAllocator(&allocatorInfo, &_allocator);
+
+        ServiceLocator::GetWindow()->RegisterWindowResizeCallback([this]() {
+            _framebufferResized = true;
+        });
     }
 
     void VulkanRenderer::createSwapchain() {
@@ -315,6 +332,37 @@ namespace ZERO
         VkSemaphoreCreateInfo semaphoreCreateInfo { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
         VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore));
         VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore));
+    }
+
+    void VulkanRenderer::cleanupSwapchain() {
+        for (auto framebuffer : _framebuffers) {
+            vkDestroyFramebuffer(_device, framebuffer, nullptr);
+        }
+        vkDestroyRenderPass(_device, _renderPass, nullptr);
+        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+        for (auto imageView : _swapchainImageViews) {
+            vkDestroyImageView(_device, imageView, nullptr);
+        }
+    }
+
+    void VulkanRenderer::recreateSwapchain() {
+        vkDeviceWaitIdle(_device);
+
+        cleanupSwapchain();
+
+        createSwapchain();
+        createDefaultRenderPass();
+        createFramebuffers();
+
+        rebuildShaders();
+    }
+
+    void VulkanRenderer::rebuildShaders() {
+        for (const auto &shader: _shaders) {
+            if (auto shaderPtr = shader.lock()) {
+                reinterpret_pointer_cast<VulkanShader>(shaderPtr)->Rebuild();
+            }
+        }
     }
 
     void VulkanRenderer::setupScene() {

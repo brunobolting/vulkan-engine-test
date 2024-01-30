@@ -13,7 +13,7 @@ namespace ZERO
     void MultiplatformWindow::OpenWindow(WindowData data) {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         _window = glfwCreateWindow(data.width, data.height, data.title.c_str(), nullptr, nullptr);
 
         glfwSetWindowUserPointer(_window, &_input);
@@ -38,6 +38,7 @@ namespace ZERO
             }
             input->UpdateKeyboardState(key, value);
         });
+
         glfwSetMouseButtonCallback(_window, [](GLFWwindow *window, int button, int action, int mods) {
             auto *input = static_cast<MultiplatformInput*>(glfwGetWindowUserPointer(window));
             if (!input) {
@@ -55,6 +56,7 @@ namespace ZERO
             }
             input->UpdateMouseState(button, value);
         });
+
         glfwSetJoystickCallback([](int joystickId, int event) {
             auto *inputManager = ServiceLocator::GetInputManager();
             if (!inputManager) {
@@ -74,6 +76,13 @@ namespace ZERO
             } else if (event == GLFW_DISCONNECTED) {
                 inputManager->RemoveDevice(InputDeviceType::GAMEPAD, joystickId);
                 printf("Joystick %d is now disconnected\n", joystickId);
+            }
+        });
+
+        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow *window, int width, int height) {
+            auto *glfwWindow = static_cast<MultiplatformWindow*>(ServiceLocator::GetWindow());
+            if (glfwWindow->_resizeCallback) {
+                glfwWindow->_resizeCallback();
             }
         });
 

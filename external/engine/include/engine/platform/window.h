@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <any>
 #include <tuple>
+#include <functional>
 
 namespace ZERO
 {
@@ -29,5 +30,6 @@ namespace ZERO
             virtual bool Update() = 0;
             virtual std::pair<int, int> GetWindowExtents() = 0;
             virtual void RequestDrawSurface(std::unordered_map<SurfaceArgs, int*>) = 0;
+            virtual void RegisterWindowResizeCallback(std::function<void()>) = 0;
     };
 }

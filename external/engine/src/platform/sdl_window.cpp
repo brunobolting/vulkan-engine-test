@@ -14,7 +14,7 @@ namespace ZERO
             data.title.c_str(),
             width,
             height,
-            SDL_WINDOW_VULKAN
+            SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
         );
     }
 
@@ -24,6 +24,16 @@ namespace ZERO
 
         if (event.type == SDL_EVENT_QUIT) {
             return true;
+        }
+
+        switch (event.window.type) {
+            case SDL_EVENT_WINDOW_RESIZED:
+                if (_resizeCallback) {
+                    _resizeCallback();
+                }
+                break;
+            default:
+                break;
         }
 
         return false;
