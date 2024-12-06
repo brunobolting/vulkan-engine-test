@@ -35,6 +35,7 @@ namespace ZERO
             void cleanupSwapchain();
             void recreateSwapchain();
             void rebuildShaders();
+            void onWindowResize();
 
             // FUNCTIONS TO BE MOVED OUT OF RENDERER
             void setupScene();

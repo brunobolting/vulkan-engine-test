@@ -195,11 +195,14 @@ namespace ZERO
         builder.set_app_name(_rendererSettings.ApplicationName.c_str())
             .request_validation_layers(true)
             .require_api_version(1, 3, 0)
+            // .enable_validation_layers()
+            // .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
             .use_default_debug_messenger();
         for (auto &extension : instanceExtensions) {
             builder.enable_extension(extension.c_str());
         }
         auto builderInstance = builder.build();
+
         vkb::Instance vulkan = builderInstance.value();
         _instance = vulkan.instance;
         _debugMessenger = vulkan.debug_messenger;
@@ -245,7 +248,12 @@ namespace ZERO
 
         ServiceLocator::GetWindow()->RegisterWindowResizeCallback([this]() {
             _framebufferResized = true;
+            // onWindowResize();
         });
+    }
+
+    void VulkanRenderer::onWindowResize() {
+        recreateSwapchain();
     }
 
     void VulkanRenderer::createSwapchain() {
@@ -263,6 +271,7 @@ namespace ZERO
         _swapchainImages = vkbSwapchain.get_images().value();
         _swapchainImageViews = vkbSwapchain.get_image_views().value();
         _swapchainImageFormat = vkbSwapchain.image_format;
+        _windowExtent = vkbSwapchain.extent;
     }
 
     void VulkanRenderer::createCommands() {
@@ -308,15 +317,15 @@ namespace ZERO
     }
 
     void VulkanRenderer::createFramebuffers() {
+        const uint32_t swapchainImageCount = _swapchainImages.size();
+        _framebuffers.resize(swapchainImageCount);
+
         VkFramebufferCreateInfo framebufferCreateInfo { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO };
         framebufferCreateInfo.renderPass = _renderPass;
         framebufferCreateInfo.attachmentCount = 1;
         framebufferCreateInfo.width = _windowExtent.width;
         framebufferCreateInfo.height = _windowExtent.height;
         framebufferCreateInfo.layers = 1;
-
-        const uint32_t swapchainImageCount = _swapchainImages.size();
-        _framebuffers.resize(swapchainImageCount);
 
         for (int i = 0; i < swapchainImageCount; i++) {
             framebufferCreateInfo.pAttachments = &_swapchainImageViews[i];
@@ -339,10 +348,10 @@ namespace ZERO
             vkDestroyFramebuffer(_device, framebuffer, nullptr);
         }
         vkDestroyRenderPass(_device, _renderPass, nullptr);
-        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
         for (auto imageView : _swapchainImageViews) {
             vkDestroyImageView(_device, imageView, nullptr);
         }
+        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
     }
 
     void VulkanRenderer::recreateSwapchain() {
