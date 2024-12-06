@@ -32,6 +32,10 @@ namespace ZERO
             void createDefaultRenderPass();
             void createFramebuffers();
             void createSyncStructures();
+            void cleanupSwapchain();
+            void recreateSwapchain();
+            void rebuildShaders();
+            void onWindowResize();
 
             // FUNCTIONS TO BE MOVED OUT OF RENDERER
             void setupScene();
@@ -41,6 +45,7 @@ namespace ZERO
         private:
             // TODO: temporary frame number
             uint64_t _frameNumber { 0 };
+            bool _framebufferResized { false };
             RendererSettings _rendererSettings {};
             /*
              * CORE VULKAN
@@ -77,6 +82,10 @@ namespace ZERO
             VkSemaphore _presentSemaphore;
             VkSemaphore _renderSemaphore;
             VkFence _renderFence;
+            /*
+             * RESOURCE MANAGEMENT
+            */
+            std::vector<std::weak_ptr<Shader>> _shaders {};
             /*
              * TEMPORARY RUNTIME GAME OBJECTS
             */

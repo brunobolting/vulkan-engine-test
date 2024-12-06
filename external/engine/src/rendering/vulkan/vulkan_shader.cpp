@@ -9,8 +9,7 @@ namespace ZERO
     VulkanShader::VulkanShader(VulkanRenderer *renderer) : _renderer(renderer) {}
 
     VulkanShader::~VulkanShader() {
-        vkDestroyPipeline(_renderer->_device, _pipeline, nullptr);
-        vkDestroyPipelineLayout(_renderer->_device, _pipelineLayout, nullptr);
+        cleanPipelineObjects();
     }
 
     void VulkanShader::Bind() {
@@ -18,6 +17,9 @@ namespace ZERO
     }
 
     void VulkanShader::Load(const std::string &&vertexShader, const std::string &&fragmentShader) {
+        cleanPipelineObjects();
+        _vertexShaderLocation = vertexShader;
+        _fragmentShaderLocation = fragmentShader;
         VkShaderModule vertShader;
         if (!VulkanUtilities::LoadShaderModule(vertexShader, _renderer->_device, vertShader)) {
             printf("failed to load vertex shader module: %s\n", vertexShader.c_str());
@@ -75,5 +77,20 @@ namespace ZERO
 
         vkDestroyShaderModule(_renderer->_device, vertShader, nullptr);
         vkDestroyShaderModule(_renderer->_device, fragShader, nullptr);
+    }
+
+    void VulkanShader::Rebuild() {
+        Load(std::move(_vertexShaderLocation), std::move(_fragmentShaderLocation));
+    }
+
+    void VulkanShader::cleanPipelineObjects() {
+        if (_pipelineLayout != VK_NULL_HANDLE) {
+            vkDestroyPipelineLayout(_renderer->_device, _pipelineLayout, nullptr);
+            _pipelineLayout = VK_NULL_HANDLE;
+        }
+        if (_pipeline != VK_NULL_HANDLE) {
+            vkDestroyPipeline(_renderer->_device, _pipeline, nullptr);
+            _pipeline = VK_NULL_HANDLE;
+        }
     }
 }

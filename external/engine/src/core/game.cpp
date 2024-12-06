@@ -32,7 +32,7 @@ namespace ZERO
             // Calculate delta time
 
             // Update game states
-            Update(0.0f);
+            Game::Update(0.0f);
 
             // Update physics
 
@@ -61,7 +61,6 @@ namespace ZERO
         };
 
         ServiceLocator::Provide(new VulkanRenderer(), settings);
-
     }
 
     void Game::shutdownServices() {
